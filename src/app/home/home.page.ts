@@ -11,6 +11,10 @@ export class HomePage {
   constructor(
     public router: Router
   ){
-    this.router.navigateByUrl('aulas');
+   // this.router.navigateByUrl('aulas');
+  }
+
+  gotoPage(page){
+    this.router.navigateByUrl(page);
   }
 }

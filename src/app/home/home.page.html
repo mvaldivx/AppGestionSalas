@@ -1,12 +1,28 @@
 <ion-header>
   <ion-toolbar>
     <ion-title>
-      Ionic 
+      Aulas App 
     </ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content padding>
-  The world is your oyster.
-  <p>If you get lost, the <a target="_blank" rel="noopener" href="https://ionicframework.com/docs/">docs</a> will be your guide.</p>
+<ion-content padding >
+  <ion-card (click)="gotoPage(aulas)">
+    <ion-card-header>
+    <ion-card-title>Gestion de Aulas</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+        <ion-icon name="business"></ion-icon>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card (click)="gotoPage(calendario)">
+    <ion-card-header>
+      <ion-card-title>Calendario</ion-card-title>
+    </ion-card-header>
+  
+    <ion-card-content>
+        <ion-icon name="calendar"></ion-icon>
+    </ion-card-content>
+  </ion-card>
 </ion-content>

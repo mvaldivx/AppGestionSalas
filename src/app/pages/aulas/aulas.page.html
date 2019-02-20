@@ -1,11 +1,30 @@
 <ion-header>
   <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
     <ion-title>Aulas</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content padding>
-  <ion-fab>
-    <ion-fab-button size="small" (click)="AddAula()"><ion-icon name="add"></ion-icon></ion-fab-button>
+  <ion-fab vertical="top" horizontal="end" edge  slot="fixed">
+    <ion-fab-button (click)="presentModal()"><ion-icon name="add"></ion-icon></ion-fab-button>
   </ion-fab>
+
+  <ion-list>
+    <ion-card *ngFor="let au of Aulas">
+      <ion-card-header>
+        <ion-card-title>
+          {{au.Nombre}}
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>Capacidad: {{au.Capacidad}}</p>
+        <p>Estado: <ion-label *ngIf="au.Estado === false">No </ion-label> <ion-label> Disponible</ion-label></p>
+      </ion-card-content>
+    </ion-card>
+  </ion-list>
 </ion-content>

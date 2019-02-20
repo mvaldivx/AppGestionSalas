@@ -1,6 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import * as firebase from 'Firebase';
-import { resolve, reject } from 'q';
+import { ModalController } from '@ionic/angular';
+import { AgregaAulaPage } from '../agrega-aula/agrega-aula.page';
+import { OverlayEventDetail } from '@ionic/core';
+import { AngularFireDatabase } from 'angularfire2/database';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-aulas',
@@ -9,37 +13,74 @@ import { resolve, reject } from 'q';
 })
 export class AulasPage implements OnInit {
   ListCategory:any;
-  temparrCat: any;
-  constructor(
-  ) { }
+  NombreAulaAdd:any;
+  CapacidadAulaAdd:any;
+  idSalaAdd:any;
+  idAulaMax:any;
+  Aulas = [];
+  ref = firebase.database().ref('Salas/');
 
-  ngOnInit() {
-    this.getAulas().then((res:any) =>{
-      this.ListCategory = res;
-      this.temparrCat = res;
-            console.log(this.temparrCat);
-    })
+  constructor(
+    public modalCtrl: ModalController,
+    public database: AngularFireDatabase,
+    public router: Router
+  ) { 
+    this.ref.on('value', resp => {
+      this.Aulas = [];
+      this.Aulas = GetAulas(resp);
+    });
   }
 
-  getAulas(){
-    var promise = new Promise((resolve, reject) => {
-    firebase.database().ref().child('Salas').orderByChild('idSala').once('value', (snapshot)=>{
-          let Catdata = snapshot.val();
-          let temparr = [];
-          for (var key in Catdata){
-            temparr.push(Catdata[key]);
-          }
-          resolve(temparr);
-        }).catch((err) =>{
-          reject(err);
-        });
-    })
-    return promise;
+  ngOnInit() {
+      }
+  
+
+  goBack(){
+    this.router.navigateByUrl('home');
+  }
+
+  ObtieneMaximoId(){
+    var idMaximo = 1;
+    this.Aulas.forEach((element) => {
+      if(element.idSala > idMaximo){
+        idMaximo = element.idSala
+      }
+    });
+    this.idAulaMax = idMaximo;
   }
 
   AddAula(){
     var Aula = firebase.database().ref().child("Salas");
-    Aula.push({idSala:'1',Nombre:'Sala 1',Capacidad: 25, Estado: true});
-    
+    Aula.push({idSala:this.idSalaAdd,Nombre:this.NombreAulaAdd,Capacidad: this.CapacidadAulaAdd, Estado: true});
+  }
+
+  async presentModal() {
+    this.ObtieneMaximoId();
+    const modal = await this.modalCtrl.create({
+      component: AgregaAulaPage,
+      componentProps: { value: true}
+    });
+
+    modal.onDidDismiss().then((detail: OverlayEventDetail) => {
+      this.ObtieneMaximoId();
+      if (detail.data != undefined) {
+       this.NombreAulaAdd= detail.data.Nombre;
+       this.CapacidadAulaAdd= detail.data.Capacidad;
+       this.idSalaAdd = this.idAulaMax +1 ;
+       this.AddAula();
+      }
+   });
+
+    return await modal.present();
   }
 }
+export const GetAulas = snapshot => {
+  let returnArr = [];
+  snapshot.forEach(childSnapshot => {
+          let item = childSnapshot.val();
+          item.key = childSnapshot.key;
+          returnArr.push(item);
+      });
+
+      return returnArr;
+  };
