@@ -1,5 +1,7 @@
 {
   "name": "GestionSalas",
-  "integrations": {},
+  "integrations": {
+    "cordova": {}
+  },
   "type": "angular"
 }
