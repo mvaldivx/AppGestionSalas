@@ -9,9 +9,11 @@ import { StatusBar } from '@ionic-native/status-bar/ngx';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { AgregaAulaPageModule } from './pages/agrega-aula/agrega-aula.module';
+import { CreaEventoPageModule } from './pages/crea-evento/crea-evento.module';
 import { environment } from '../environments/environment';
 import { AngularFireModule } from 'angularfire2';
 import { AngularFireDatabaseModule } from 'angularfire2/database';
+import { NgCalendarModule } from 'ionic2-calendar';
 
 @NgModule({
   declarations: [AppComponent],
@@ -22,7 +24,9 @@ import { AngularFireDatabaseModule } from 'angularfire2/database';
     AppRoutingModule,
     AgregaAulaPageModule,
     AngularFireModule.initializeApp(environment.firebase, 'Salas'),
-    AngularFireDatabaseModule
+    AngularFireDatabaseModule,
+    NgCalendarModule,
+    CreaEventoPageModule
   ],
   providers: [
     StatusBar,

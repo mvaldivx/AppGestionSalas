@@ -6,6 +6,7 @@ const routes: Routes = [
   { path: 'home', loadChildren: './home/home.module#HomePageModule' },  { path: 'aulas', loadChildren: './pages/aulas/aulas.module#AulasPageModule' },
   { path: 'agrega-aula', loadChildren: './agrega-aula/agrega-aula.module#AgregaAulaPageModule' },
   { path: 'calendario', loadChildren: './pages/calendario/calendario.module#CalendarioPageModule' },
+  { path: 'crea-evento', loadChildren: './pages/crea-evento/crea-evento.module#CreaEventoPageModule' },
 
 ];
 
