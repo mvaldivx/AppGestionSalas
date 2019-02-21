@@ -24,7 +24,7 @@ export class CalendarioPage implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.loadEvents();
+    //this.loadEvents();
   }
 
   async presentModal(time) {
@@ -86,7 +86,11 @@ export class CalendarioPage implements OnInit {
     var eventType = 0;
     var startDay = data.startOn;
     var endDay = data.startOn;
-    this.eventSource.push();
+    this.eventSource.push({
+      title: data.descripcion,
+      startTime: new Date(startDay.getFullYear(), startDay.getMonth(), startDay.getDate() + startDay, 0, startDay.getMinutes()),
+      endTime: new Date(startDay.getFullYear(), startDay.getMonth(), startDay.getDate() + startDay, 0, startDay.getMinutes()),
+      allDay: false});
   }
 
   loadEvents() {
