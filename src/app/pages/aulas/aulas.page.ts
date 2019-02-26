@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import * as firebase from 'Firebase';
 import { ModalController } from '@ionic/angular';
 import { AgregaAulaPage } from '../agrega-aula/agrega-aula.page';
 import { OverlayEventDetail } from '@ionic/core';
 import { AngularFireDatabase } from 'angularfire2/database';
 import { Router } from '@angular/router';
+
+import * as firebase from 'Firebase';
 
 @Component({
   selector: 'app-aulas',

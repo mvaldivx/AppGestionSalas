@@ -2,22 +2,27 @@ import { Component, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { CreaEventoPage } from '../crea-evento/crea-evento.page';
 import { OverlayEventDetail } from '@ionic/core';
+import { StoreCalendario } from '../Store/StoreCalendario';
+import * as firebase from 'Firebase'; 
 
+let strCal = new StoreCalendario;
 @Component({
   selector: 'app-calendario',
   templateUrl: './calendario.page.html',
   styleUrls: ['./calendario.page.scss'],
 })
 export class CalendarioPage implements OnInit {
-  eventSource;
-  viewTitle;
-  isDayMode=false;
-  isToday: boolean;
-  calendar = {
-    mode: 'month',
-    currentDate: new Date()
-  };
-  
+  date= new Date();
+  daysInThisMonth: any;
+  daysInLastMonth: any;
+  daysInNextMonth: any;
+  monthNames: string[]=['Enero','Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Nobiembre', 'Diciembre'];
+  currentMonth= strCal.getCurrentMonth();
+  currentYear= strCal.getCurrentYear();
+  currentDate: any;
+  eventos:any[];
+  selectedDate = strCal.getSelectedDate() ;
+  ref = firebase.database().ref('Eventos/');
 
   constructor(
     public modalCtrl: ModalController
@@ -25,111 +30,131 @@ export class CalendarioPage implements OnInit {
 
   ngOnInit() {
     //this.loadEvents();
-  }
-
-  async presentModal(time) {
-    const modal = await this.modalCtrl.create({
-      component: CreaEventoPage,
-      componentProps: { value: time}
+    this.getDaysOfMonth();
+    this.ref.orderByChild('dtInicio').on('value', resp => {
+      this.eventos = [];
+      this.eventos = GetEventos(resp);
     });
+  }
 
-    modal.onDidDismiss().then((detail: OverlayEventDetail) => {
-      if (detail.data != undefined) {
-        this.createEvent(detail.data)
+  getDaysOfMonth() {
+    this.daysInThisMonth = new Array();
+    this.daysInLastMonth = new Array();
+    this.daysInNextMonth = new Array();
+    strCal.setCurrentMonth(this.monthNames[this.date.getMonth()]);
+    strCal.setCurrentYear(this.date.getFullYear());
+    if(this.date.getMonth() === new Date().getMonth()) {
+      this.currentDate = new Date().getDate();
+    } else {
+      this.currentDate = 999;
+    }
+    
+    var firstDayThisMonth = new Date(this.date.getFullYear(), this.date.getMonth(), 1).getDay();
+    var prevNumOfDays = new Date(this.date.getFullYear(), this.date.getMonth(), 0).getDate();
+    
+    for(var i = prevNumOfDays-(firstDayThisMonth-1); i <= prevNumOfDays; i++) {
+      this.daysInLastMonth.push(i);
+    }
+  
+    var thisNumOfDays = new Date(this.date.getFullYear(), this.date.getMonth()+1, 0).getDate();
+    for (var i = 0; i < thisNumOfDays; i++) {
+      this.daysInThisMonth.push(i+1);
+    }
+  
+    var lastDayThisMonth = new Date(this.date.getFullYear(), this.date.getMonth()+1, 0).getDay();
+    var nextNumOfDays = new Date(this.date.getFullYear(), this.date.getMonth()+2, 0).getDate();
+    for (var i = 0; i < (6-lastDayThisMonth); i++) {
+      this.daysInNextMonth.push(i+1);
+    }
+    var totalDays = this.daysInLastMonth.length+this.daysInThisMonth.length+this.daysInNextMonth.length;
+    if(totalDays<36) {
+      for(var i = (7-lastDayThisMonth); i < ((7-lastDayThisMonth)+7); i++) {
+        this.daysInNextMonth.push(i);
       }
-   });
-
-    return await modal.present();
+    }
   }
 
-  onEventSelected(event) {
+  goToLastMonth() {
+    this.date = new Date(this.date.getFullYear(), this.date.getMonth(), 0);
+    this.getDaysOfMonth();
+  }
+
+  goToNextMonth() {
+    this.date = new Date(this.date.getFullYear(), this.date.getMonth()+2, 0);
+    this.getDaysOfMonth();
+  }
+
+  verEventosDelDia(day){
+    this.selectedDate = day
+    strCal.setSelectedDate(day);
+    this.ref.orderByChild('dtInicio').on('value', resp => {
+      this.eventos = [];
+      this.eventos = GetEventos(resp);
+    });
+  }
+
+  async NewEventModal() {
+    var date = (strCal.getSelectedDate != undefined) ? strCal.getSelectedDate : this.currentDate;
+    var ActualDate = new Date()
+    const modal: HTMLIonModalElement =
+       await this.modalCtrl.create({
+          component: CreaEventoPage,
+          componentProps: {
+             aParameter: true,
+             value: new Date(strCal.getCurrentYear() + '-' + strCal.getCurrentMonth() + '-' + date + ' ' + ActualDate.getHours() + ':' + ActualDate.getMinutes()) 
+          }
+    });
+     
+    modal.onDidDismiss().then((detail: OverlayEventDetail) => {
+      var params:any;
+      params = detail.data;
+       if(params != undefined) { 
+         this.addEvent(params)
+       }
+    });
     
-      console.log('Event selected:' + event.startTime + '-' + event.endTime + ',' + event.title);
+    await modal.present();
   }
-  changeMode(mode) {
-    if(mode === 'day'){
-      this.isDayMode = true;
-    }else{
-      this.isDayMode = false;
+
+  addEvent(data){
+      var Evento = firebase.database().ref().child("Eventos");
+      Evento.push({idSala:data.idSala,
+                    dtInicio:data.FechaIni.getTime(),
+                    dtFinal:data.FechaFin.getTime() ,
+                    Descripcion:data.Descripcion,
+                    idUsuario: 1});
+  }
+
+
+  newEvent(){
+    this.NewEventModal()
+  }
+
+}
+
+
+ export const GetEventos = snapshot => {
+
+  let returnArr = [];
+  snapshot.forEach(childSnapshot => {
+    var currDay =strCal.getSelectedDate()
+    if( currDay != undefined){
+      var currYear = strCal.getCurrentYear()
+      var currMonth = strCal.getCurrentMonth()
+      let item = childSnapshot.val();
+      item.key = childSnapshot.key;
+      let FechaFin = new Date(item.dtFinal)
+      let FechaIni = new Date( item.dtInicio)
+      var fdate = new Date(currYear + "-" + currMonth + '-' + currDay +" 00:00")
+      var actualDateIni= new Date(fdate.getFullYear() + '-' + (fdate.getMonth()+1) + '-' + fdate.getDate() + ' 00:00')
+      var actualDateFin= new Date(fdate.getFullYear() + '-' + (fdate.getMonth()+1) + '-' + fdate.getDate() + ' 23:59')
+      
+      if(FechaIni >= actualDateIni  && actualDateFin >= FechaFin ){
+        returnArr.push(item);
+      }
     }
-      this.calendar.mode = mode;
-  }
-  today() {
-      this.calendar.currentDate = new Date();
-  }
-  onTimeSelected(ev) {
-    if(this.isDayMode){
-      this.presentModal(ev.selectedTime)
-    }else{
-      this.changeMode('day');
-    }
-    
-    console.log('Selected time: ' + ev.selectedTime + ', hasEvents: ' +
-          (ev.events !== undefined && ev.events.length !== 0) + ', disabled: ' + ev.disabled);
-  }
-  onCurrentDateChanged(event:Date) {
-      var today = new Date();
-      today.setHours(0, 0, 0, 0);
-      event.setHours(0, 0, 0, 0);
-      this.isToday = today.getTime() === event.getTime();
-  }
-  onRangeChanged(ev) {
-    console.log('range changed: startTime: ' + ev.startTime + ', endTime: ' + ev.endTime);
-  }
-  markDisabled = (date:Date) => {
-    var current = new Date();
-    current.setHours(0, 0, 0);
-    return date < current;
+          
+      });
+
+      return returnArr;
   };
-
-  createEvent(data){
-    var eventType = 0;
-    var startDay = data.startOn;
-    var endDay = data.startOn;
-    this.eventSource.push({
-      title: data.descripcion,
-      startTime: new Date(startDay.getFullYear(), startDay.getMonth(), startDay.getDate() + startDay, 0, startDay.getMinutes()),
-      endTime: new Date(startDay.getFullYear(), startDay.getMonth(), startDay.getDate() + startDay, 0, startDay.getMinutes()),
-      allDay: false});
-  }
-
-  loadEvents() {
-    this.eventSource = this.createRandomEvents();
-}
-  createRandomEvents() {
-    var events = [];
-    for (var i = 0; i < 50; i += 1) {
-        var date = new Date();
-        var eventType = Math.floor(Math.random() * 2);
-        var startDay = Math.floor(Math.random() * 90) - 45;
-        var endDay = Math.floor(Math.random() * 2) + startDay;
-        var startTime;
-        var endTime;
-        if (eventType === 0) {
-            startTime = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() + startDay));
-            if (endDay === startDay) {
-                endDay += 1;
-            }
-            endTime = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() + endDay));
-            events.push({
-                title: 'All Day - ' + i,
-                startTime: startTime,
-                endTime: endTime,
-                allDay: true
-            });
-        } else {
-            var startMinute = Math.floor(Math.random() * 24 * 60);
-            var endMinute = Math.floor(Math.random() * 180) + startMinute;
-            startTime = new Date(date.getFullYear(), date.getMonth(), date.getDate() + startDay, 0, date.getMinutes() + startMinute);
-            endTime = new Date(date.getFullYear(), date.getMonth(), date.getDate() + endDay, 0, date.getMinutes() + endMinute);
-            events.push({
-                title: 'Event - ' + i,
-                startTime: startTime,
-                endTime: endTime,
-                allDay: false
-            });
-        }
-    }
-    return events;
-}
-}

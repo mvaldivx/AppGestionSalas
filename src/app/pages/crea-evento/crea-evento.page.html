@@ -15,18 +15,34 @@
       <ion-label position="floating">Dia</ion-label>
       <ion-input [(ngModel)]="day"></ion-input>
     </ion-item>
-    <ion-item>
+    <ion-item class="timeitem">
       <ion-label position="floating">A partir de:</ion-label>
-      <ion-input [(ngModel)]="time"></ion-input>
+        <ion-datetime [(ngModel)]="time" class="time" display-format="hh:mm"></ion-datetime>
     </ion-item>
-    <ion-item>
-      <ion-label position="floating">Duración</ion-label>
-      <ion-select [(ngModel)]="duracion" placeholder="Horas">
-          <ion-select-option value="1">1</ion-select-option>
-          <ion-select-option value="2">2</ion-select-option>
-          <ion-select-option value="3">3</ion-select-option>
-          <ion-select-option value="4">4</ion-select-option>
-          <ion-select-option value="5">5</ion-select-option>
+    <ion-item class="ampmitem">
+        <ion-label position="floating"></ion-label>
+      <ion-select [(ngModel)]="am_pm" class="ampm">
+        <ion-select-option value="AM">AM</ion-select-option>
+        <ion-select-option value="PM">PM</ion-select-option>
+      </ion-select>
+    </ion-item>
+    <div>
+      <ion-item class="timeitem">
+        <ion-label position="floating">Finaliza :</ion-label>
+          <ion-datetime [(ngModel)]="timeFin" class="time" display-format="hh:mm"></ion-datetime>
+      </ion-item>
+      <ion-item class="ampmitem">
+          <ion-label position="floating"></ion-label>
+        <ion-select [(ngModel)]="am_pmFin" class="ampm">
+          <ion-select-option value="AM">AM</ion-select-option>
+          <ion-select-option value="PM">PM</ion-select-option>
+        </ion-select>
+      </ion-item>
+    </div>
+    <ion-item class="Sala">
+        <ion-label position="floating">Aula</ion-label>
+        <ion-select placeholder="Selecciona una" [(ngModel)]="idAula">
+          <ion-select-option *ngFor="let au of Aulas" value="{{au.idSala}}">{{au.Nombre}}</ion-select-option>
         </ion-select>
     </ion-item>
     <ion-item>

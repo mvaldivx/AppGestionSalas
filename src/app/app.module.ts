@@ -13,7 +13,7 @@ import { CreaEventoPageModule } from './pages/crea-evento/crea-evento.module';
 import { environment } from '../environments/environment';
 import { AngularFireModule } from 'angularfire2';
 import { AngularFireDatabaseModule } from 'angularfire2/database';
-import { NgCalendarModule } from 'ionic2-calendar';
+import {StoreCalendario} from './pages/Store/StoreCalendario';
 
 @NgModule({
   declarations: [AppComponent],
@@ -25,12 +25,12 @@ import { NgCalendarModule } from 'ionic2-calendar';
     AgregaAulaPageModule,
     AngularFireModule.initializeApp(environment.firebase, 'Salas'),
     AngularFireDatabaseModule,
-    NgCalendarModule,
     CreaEventoPageModule
   ],
   providers: [
     StatusBar,
     SplashScreen,
+    StoreCalendario,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }
   ],
   bootstrap: [AppComponent]
