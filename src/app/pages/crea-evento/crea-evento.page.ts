@@ -17,8 +17,10 @@ monthNames: string[]=['Enero','Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Jul
 am_pm:any;
 am_pmFin:any;
 Aulas = [];
+Eventos=[];
 idAula:any;
-ref = firebase.database().ref('Salas/');
+refSalas = firebase.database().ref('Salas/');
+refEventos = firebase.database().ref('Eventos/');
 
   constructor(
     public modalCtrl: ModalController,
@@ -27,10 +29,18 @@ ref = firebase.database().ref('Salas/');
   ) { 
     this.date =this.navParams.get('value');
     this.FormatDate();
-    this.ref.on('value', resp => {
-      this.Aulas = [];
-      this.Aulas = GetAulas(resp);
+
+
+    this.refEventos.on('value', resp => {
+      this.Eventos = [];
+      this.Eventos = this.GetAulasEventos(resp);
+      this.refSalas.on('value', resp => {
+        this.Aulas = [];
+        this.Aulas = this.GetAula(resp);
+      });
+      
     });
+
   }
 
   ngOnInit() {
@@ -92,21 +102,60 @@ ref = firebase.database().ref('Salas/');
             FechaFin: FechaFin,
             FechaIni: FechaIni,
             Descripcion: this.Descripcion,
-            idSala : this.idAula
+            idSala : parseInt(this.idAula)
           });
         }
       }
     }else{ this.presentToast("Error, Faltan datos")}
     
   }
-}
-export const GetAulas = snapshot => {
-  let returnArr = [];
-  snapshot.forEach(childSnapshot => {
+
+  ObtenAulaDisp(){
+    this.refEventos.on('value', resp => {
+      this.Eventos = [];
+      this.Eventos = this.GetAulasEventos(resp);
+      this.refSalas.on('value', resp => {
+        this.Aulas = [];
+        this.Aulas = this.GetAula(resp);
+      });
+      
+    });
+  }
+
+  GetAula  = snapshot =>{
+    let returnArr = [];
+    snapshot.forEach(childSnapshot => {
           let item = childSnapshot.val();
           item.key = childSnapshot.key;
-          returnArr.push(item);
+          if(this.Eventos.filter(function(Eventos){return Eventos.idSala === item.idSala}).length <= 0){
+            returnArr.push(item);
+          }
+          
       });
 
       return returnArr;
-  };
+  }
+
+
+   GetAulasEventos  = snapshot =>{
+    let returnArr = [];
+    snapshot.forEach(childSnapshot => {
+          let item = childSnapshot.val();
+          item.key = childSnapshot.key;
+          let FechaFin = new Date(item.dtFinal)
+          let FechaIni = new Date( item.dtInicio)
+          var timeIn = (this.am_pm === 'AM')? this.time: (parseInt(this.time.split(':')[0]) + 12) + ':' + this.time.split(':')[1]
+          var timeFn = (this.am_pmFin === 'AM')? this.timeFin: (parseInt(this.timeFin.split(':')[0]) + 12) + ':' + this.timeFin.split(':')[1]
+          var dt = this.date.getFullYear() + '-' + ((this.date.getMonth()+1 >10)? this.date.getMonth()+1: '0'+(this.date.getMonth()+1)) + '-' + this.date.getDate()
+          var dtIni = new Date(dt + ' ' + (((timeIn.split(":")[1])< 10)?'0' + timeIn: timeIn))
+          var dtFin = new Date(dt + ' ' + (((timeFn.split(":")[1])< 10)?'0' + timeFn: timeFn))
+          if( (dtFin > FechaIni && dtFin <= FechaFin) ||  
+              (dtIni >= FechaIni && dtIni < FechaFin) ||
+              (dtIni < FechaIni && dtFin > FechaFin) ){
+            returnArr.push(item);
+          }
+      });
+
+      return returnArr;
+  }
+}

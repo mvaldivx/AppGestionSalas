@@ -2,22 +2,34 @@ import * as tslib_1 from "tslib";
 import { Component } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { CreaEventoPage } from '../crea-evento/crea-evento.page';
+import { StoreCalendario } from '../Store/StoreCalendario';
+import * as firebase from 'Firebase';
+var strCal = new StoreCalendario;
 var CalendarioPage = /** @class */ (function () {
     function CalendarioPage(modalCtrl) {
         this.modalCtrl = modalCtrl;
         this.date = new Date();
         this.monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Nobiembre', 'Diciembre'];
+        this.currentMonth = strCal.getCurrentMonth();
+        this.currentYear = strCal.getCurrentYear();
+        this.selectedDate = strCal.getSelectedDate();
+        this.ref = firebase.database().ref('Eventos/');
     }
     CalendarioPage.prototype.ngOnInit = function () {
+        var _this = this;
         //this.loadEvents();
         this.getDaysOfMonth();
+        this.ref.orderByChild('dtInicio').on('value', function (resp) {
+            _this.eventos = [];
+            _this.eventos = GetEventos(resp);
+        });
     };
     CalendarioPage.prototype.getDaysOfMonth = function () {
         this.daysInThisMonth = new Array();
         this.daysInLastMonth = new Array();
         this.daysInNextMonth = new Array();
-        this.currentMonth = this.monthNames[this.date.getMonth()];
-        this.currentYear = this.date.getFullYear();
+        strCal.setCurrentMonth(this.monthNames[this.date.getMonth()]);
+        strCal.setCurrentYear(this.date.getFullYear());
         if (this.date.getMonth() === new Date().getMonth()) {
             this.currentDate = new Date().getDate();
         }
@@ -54,28 +66,37 @@ var CalendarioPage = /** @class */ (function () {
         this.getDaysOfMonth();
     };
     CalendarioPage.prototype.verEventosDelDia = function (day) {
+        var _this = this;
         this.selectedDate = day;
-        console.log(day + ' ' + this.currentYear + ' ' + this.currentMonth);
+        strCal.setSelectedDate(day);
+        this.ref.orderByChild('dtInicio').on('value', function (resp) {
+            _this.eventos = [];
+            _this.eventos = GetEventos(resp);
+        });
     };
     CalendarioPage.prototype.NewEventModal = function () {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             var date, ActualDate, modal;
+            var _this = this;
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        date = (this.selectedDate != undefined) ? this.selectedDate : this.currentDate;
+                        date = (strCal.getSelectedDate() != undefined) ? strCal.getSelectedDate() : this.currentDate;
                         ActualDate = new Date();
                         return [4 /*yield*/, this.modalCtrl.create({
                                 component: CreaEventoPage,
                                 componentProps: {
                                     aParameter: true,
-                                    value: new Date(this.currentYear + '-' + this.currentMonth + '-' + date + ' ' + ActualDate.getHours() + ':' + ActualDate.getMinutes())
+                                    value: new Date(strCal.getCurrentYear() + '-' + strCal.getCurrentMonth() + '-' + date + ' ' + ActualDate.getHours() + ':' + ActualDate.getMinutes())
                                 }
                             })];
                     case 1:
                         modal = _a.sent();
                         modal.onDidDismiss().then(function (detail) {
-                            if (detail !== null) {
+                            var params;
+                            params = detail.data;
+                            if (params != undefined) {
+                                _this.addEvent(params);
                             }
                         });
                         return [4 /*yield*/, modal.present()];
@@ -85,6 +106,14 @@ var CalendarioPage = /** @class */ (function () {
                 }
             });
         });
+    };
+    CalendarioPage.prototype.addEvent = function (data) {
+        var Evento = firebase.database().ref().child("Eventos");
+        Evento.push({ idSala: data.idSala,
+            dtInicio: data.FechaIni.getTime(),
+            dtFinal: data.FechaFin.getTime(),
+            Descripcion: data.Descripcion,
+            idUsuario: 1 });
     };
     CalendarioPage.prototype.newEvent = function () {
         this.NewEventModal();
@@ -100,4 +129,25 @@ var CalendarioPage = /** @class */ (function () {
     return CalendarioPage;
 }());
 export { CalendarioPage };
+export var GetEventos = function (snapshot) {
+    var returnArr = [];
+    snapshot.forEach(function (childSnapshot) {
+        var currDay = strCal.getSelectedDate();
+        if (currDay != undefined) {
+            var currYear = strCal.getCurrentYear();
+            var currMonth = strCal.getCurrentMonth();
+            var item = childSnapshot.val();
+            item.key = childSnapshot.key;
+            var FechaFin = new Date(item.dtFinal);
+            var FechaIni = new Date(item.dtInicio);
+            var fdate = new Date(currYear + "-" + currMonth + '-' + currDay + " 00:00");
+            var actualDateIni = new Date(fdate.getFullYear() + '-' + (fdate.getMonth() + 1) + '-' + fdate.getDate() + ' 00:00');
+            var actualDateFin = new Date(fdate.getFullYear() + '-' + (fdate.getMonth() + 1) + '-' + fdate.getDate() + ' 23:59');
+            if (FechaIni >= actualDateIni && actualDateFin >= FechaFin) {
+                returnArr.push(item);
+            }
+        }
+    });
+    return returnArr;
+};
 //# sourceMappingURL=calendario.page.js.map

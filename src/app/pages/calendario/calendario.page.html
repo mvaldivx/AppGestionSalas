@@ -12,7 +12,7 @@
   <div class="calendar-header">
     <ion-row class="calendar-month">
       <ion-col col-2 (click)="goToLastMonth()"><ion-icon name="arrow-back"></ion-icon></ion-col>
-      <ion-col col-8>{{currentMonth}} {{currentYear}}</ion-col>
+      <ion-col col-8>{{currentMonth}} -  {{currentYear}}</ion-col>
       <ion-col col-2 class="NextMonth" (click)="goToNextMonth()"><ion-icon name="arrow-forward"></ion-icon></ion-col>
     </ion-row>
   </div>
@@ -40,7 +40,14 @@
   </div>
 
   <div>
-    <ion-item *ngFor="let ev of eventos">{{ev.Descripcion}}</ion-item>
+    <ion-item *ngFor="let ev of eventos" text-wrap>
+      <ion-icon name="calendar" item-start></ion-icon>
+      <ion-label class="descEvent">
+        <h2>{{ev.Descripcion}}</h2>
+        <p>{{ev.Sala}}</p>
+      </ion-label>
+      <p>{{ev.horaIni}} - {{ev.horaFin}}</p>
+    </ion-item>
   </div>
   
 </ion-content>

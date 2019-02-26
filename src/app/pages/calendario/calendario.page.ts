@@ -17,12 +17,14 @@ export class CalendarioPage implements OnInit {
   daysInLastMonth: any;
   daysInNextMonth: any;
   monthNames: string[]=['Enero','Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Nobiembre', 'Diciembre'];
-  currentMonth= strCal.getCurrentMonth();
-  currentYear= strCal.getCurrentYear();
+  currentMonth:any;
+  currentYear:any;
   currentDate: any;
   eventos:any[];
+  aulas:any[];
   selectedDate = strCal.getSelectedDate() ;
-  ref = firebase.database().ref('Eventos/');
+  refau = firebase.database().ref('Salas/');
+  refev = firebase.database().ref('Eventos/');
 
   constructor(
     public modalCtrl: ModalController
@@ -31,7 +33,13 @@ export class CalendarioPage implements OnInit {
   ngOnInit() {
     //this.loadEvents();
     this.getDaysOfMonth();
-    this.ref.orderByChild('dtInicio').on('value', resp => {
+    this.currentMonth = strCal.getCurrentMonth();
+    this.currentYear = strCal.getCurrentYear();
+    this.refau.on('value', resp => {
+      strCal.setAulas(GetAulas(resp));
+    });
+
+    this.refev.orderByChild('dtInicio').on('value', resp => {
       this.eventos = [];
       this.eventos = GetEventos(resp);
     });
@@ -87,14 +95,14 @@ export class CalendarioPage implements OnInit {
   verEventosDelDia(day){
     this.selectedDate = day
     strCal.setSelectedDate(day);
-    this.ref.orderByChild('dtInicio').on('value', resp => {
+    this.refev.orderByChild('dtInicio').on('value', resp => {
       this.eventos = [];
       this.eventos = GetEventos(resp);
     });
   }
 
   async NewEventModal() {
-    var date = (strCal.getSelectedDate != undefined) ? strCal.getSelectedDate : this.currentDate;
+    var date = (strCal.getSelectedDate() != undefined) ? strCal.getSelectedDate() : this.currentDate;
     var ActualDate = new Date()
     const modal: HTMLIonModalElement =
        await this.modalCtrl.create({
@@ -150,7 +158,21 @@ export class CalendarioPage implements OnInit {
       var actualDateFin= new Date(fdate.getFullYear() + '-' + (fdate.getMonth()+1) + '-' + fdate.getDate() + ' 23:59')
       
       if(FechaIni >= actualDateIni  && actualDateFin >= FechaFin ){
-        returnArr.push(item);
+        var ampmin = (new Date(item.dtInicio).getHours()) >= 12 ? "PM" : "AM";
+        var hin = (new Date(item.dtInicio).getHours()>12)?new Date(item.dtInicio).getHours()-12:new Date(item.dtInicio).getHours()
+        var hini = hin + ':' + ((new Date(item.dtInicio).getMinutes()<10)? '0'+new Date(item.dtInicio).getMinutes():new Date(item.dtInicio).getMinutes());
+        var ampmfn = (new Date(item.dtFinal).getHours()) >= 12 ? "PM" : "AM";
+        var hfn = (new Date(item.dtFinal).getHours()>12)?new Date(item.dtFinal).getHours()-12:new Date(item.dtFinal).getHours()
+        var hFin = hfn + ':' + ((new Date(item.dtFinal).getMinutes()<10)? '0'+new Date(item.dtFinal).getMinutes():new Date(item.dtFinal).getMinutes());
+        
+        var Aula = strCal.getAulas().filter(function(aulas){return aulas.idSala === item.idSala})[0].Nombre
+        console.log(Aula)
+        returnArr.push({Descripcion:item.Descripcion,dtFinal: new Date(item.dtFinal),
+          dtInicio: new Date(item.dtinicio), 
+           horaIni: hini + ' ' + ampmin,
+           horaFin: hFin + ' ' + ampmfn,
+           Sala: Aula,
+            idSala: item.idSala, idUsuario: item.idUsuario });
       }
     }
           
@@ -158,3 +180,15 @@ export class CalendarioPage implements OnInit {
 
       return returnArr;
   };
+
+  export const GetAulas= snapshot =>{
+    let returnArr = [];
+    snapshot.forEach(childSnapshot => {
+          let item = childSnapshot.val();
+          item.key = childSnapshot.key;
+          returnArr.push(item);
+          
+      });
+
+      return returnArr;
+  }

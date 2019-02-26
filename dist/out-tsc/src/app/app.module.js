@@ -12,6 +12,7 @@ import { CreaEventoPageModule } from './pages/crea-evento/crea-evento.module';
 import { environment } from '../environments/environment';
 import { AngularFireModule } from 'angularfire2';
 import { AngularFireDatabaseModule } from 'angularfire2/database';
+import { StoreCalendario } from './pages/Store/StoreCalendario';
 var AppModule = /** @class */ (function () {
     function AppModule() {
     }
@@ -31,6 +32,7 @@ var AppModule = /** @class */ (function () {
             providers: [
                 StatusBar,
                 SplashScreen,
+                StoreCalendario,
                 { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }
             ],
             bootstrap: [AppComponent]

@@ -17,11 +17,11 @@
     </ion-item>
     <ion-item class="timeitem">
       <ion-label position="floating">A partir de:</ion-label>
-        <ion-datetime [(ngModel)]="time" class="time" display-format="hh:mm"></ion-datetime>
+        <ion-datetime [(ngModel)]="time" class="time" (ionChange)="ObtenAulaDisp()" display-format="hh:mm"></ion-datetime>
     </ion-item>
     <ion-item class="ampmitem">
         <ion-label position="floating"></ion-label>
-      <ion-select [(ngModel)]="am_pm" class="ampm">
+      <ion-select [(ngModel)]="am_pm" class="ampm" (ionChange)="ObtenAulaDisp()">
         <ion-select-option value="AM">AM</ion-select-option>
         <ion-select-option value="PM">PM</ion-select-option>
       </ion-select>
@@ -29,11 +29,11 @@
     <div>
       <ion-item class="timeitem">
         <ion-label position="floating">Finaliza :</ion-label>
-          <ion-datetime [(ngModel)]="timeFin" class="time" display-format="hh:mm"></ion-datetime>
+          <ion-datetime [(ngModel)]="timeFin" class="time" display-format="hh:mm" (ionChange)="ObtenAulaDisp()"></ion-datetime>
       </ion-item>
       <ion-item class="ampmitem">
           <ion-label position="floating"></ion-label>
-        <ion-select [(ngModel)]="am_pmFin" class="ampm">
+        <ion-select [(ngModel)]="am_pmFin" class="ampm" (ionChange)="ObtenAulaDisp()">
           <ion-select-option value="AM">AM</ion-select-option>
           <ion-select-option value="PM">PM</ion-select-option>
         </ion-select>

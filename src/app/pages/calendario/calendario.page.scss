@@ -18,7 +18,7 @@
     color: #999999;
     font-size: 90%;
   }
-  .currentDate, .otherDate {
+  .currentDate, .otherDate, .selectedDate {
     padding: 5px;
   }
   .currentDate {
@@ -34,8 +34,10 @@
     border-radius: 30px;
   }
   .calendar-header {
-    background-color: #8099c5;
+    background-color: #e83e3e;
     color: #FFFFFF;
+    width:100%;
+    font-weight: bold;
   }
   .event-bullet {
     margin: 2px auto;
@@ -53,7 +55,11 @@
     border: none;
   }
   .calendar-body {
+    width:100%;
     .grid {
+      padding: 0;
+    }
+    ion-grid{
       padding: 0;
     }
     .col:last-child {
@@ -65,15 +71,23 @@
     }
     .calendar-weekday {
       font-weight: bold;
-      border-bottom: solid 1px #8099c5;
-      background-color: #97add3;
+      border-bottom: solid 1px #e83e3e;
+      background-color: #e83e3e;
       color: white;
     }
     .calendar-date {
-      border-top: solid 1px #8099c5;
-      border-bottom: solid 1px #8099c5;
+      border-top: solid 1px #e83e3e;
+      border-bottom: solid 1px #e83e3e;
     }
   }
   .NextMonth{
     text-align: end;
+
+    ion-content{
+      width:100%;
+      height:100%;
+    }
+}
+.descEvent{    
+  margin-left: 20px;
 }
